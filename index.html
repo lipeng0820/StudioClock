@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>演播室时钟</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: black;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .clock-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .project-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .clocks {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .clock {
+            text-align: center;
+            margin: 0 20px;
+        }
+
+        .clock-title {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+
+        .clock-time {
+            font-family: 'Digital Dismay', sans-serif;
+            font-size: 7em;
+            font-weight: Regular;
+        }
+
+        #startTime .clock-time {
+            color: red;
+        }
+
+        #localTime .clock-time {
+            color: green;
+        }
+
+        #countdown .clock-time {
+            color: green;
+        }
+
+        .standby {
+            font-size: 1.5em;
+            color: orange;
+            animation: blink 5s infinite;
+        }
+
+        .on-air {
+            color: red;
+            animation: blink 1s infinite;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        #resetButton {
+            background-color: #f44336;
+        }
+
+        #settingsButton {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+        }
+
+        #settingsPanel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        #settingsPanel.light-bg {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: black;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        #settingsPanel label, #settingsPanel input, #settingsPanel select {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        #currentBackgroundImage {
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        #backgroundOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingScreen">
+        <div class="loader"></div>
+    </div>
+
+    <div id="backgroundOverlay"></div>
+
+    <button id="settingsButton">设置</button>
+
+    <div id="settingsPanel">
+        <h2>设置</h2>
+        <label for="fontSize">时钟字体大小：</label>
+        <input type="range" id="fontSize" min="20" max="200" value="70">
+        <label for="backgroundImage">背景图片：</label>
+        <div id="currentBackgroundImage"></div>
+        <input type="file" id="backgroundImage" accept="image/*">
+        <label for="backgroundMode">背景模式：</label>
+        <select id="backgroundMode">
+            <option value="cover">自适应浏览器尺寸</option>
+            <option value="contain">裁切</option>
+            <option value="stretch">拉伸</option>
+        </select>
+        <label for="blurAmount">背景模糊度：</label>
+        <input type="range" id="blurAmount" min="0" max="20" value="0">
+        <label for="opacity">背景暗度：</label>
+        <input type="range" id="opacity" min="0" max="100" value="0">
+        <button id="saveSettings">保存设置</button>
+    </div>
+
+    <div id="clocksContainer"></div>
+    <button id="addClockButton">+</button>
+    <button id="resetButton">重置</button>
+
+    <script>
+        class StudioClock {
+            constructor(container, index) {
+                this.container = container;
+                this.index = index;
+                this.createClockElement();
+                this.loadSettings();
+            }
+
+            createClockElement() {
+                this.element = document.createElement('div');
+                this.element.className = 'clock-container';
+                this.element.innerHTML = `
+                    <div class="project-name" contenteditable="true">项目 ${this.index + 1}</div>
+                    <div class="clocks">
+                        <div class="clock" id="startTime">
+                            <div class="clock-title">开播时间</div>
+                            <div class="clock-time"></div>
+                        </div>
+                        <div class="clock" id="localTime">
+                            <div class="clock-title">当地时间</div>
+                            <div class="clock-time"></div>
+                            <div class="status"></div>
+                        </div>
+                        <div class="clock" id="countdown">
+                            <div class="clock-title">倒计时</div>
+                            <div class="clock-time"></div>
+                        </div>
+                    </div>
+                    <div class="buttons">
+                        <button class="remove-button">-</button>
+                    </div>
+                `;
+                this.container.appendChild(this.element);
+
+                this.startTimeElement = this.element.querySelector('#startTime .clock-time');
+                this.localTimeElement = this.element.querySelector('#localTime .clock-time');
+                this.countdownElement = this.element.querySelector('#countdown .clock-time');
+                this.statusElement = this.element.querySelector('#localTime .status');
+                this.projectNameElement = this.element.querySelector('.project-name');
+
+                this.startTimeElement.addEventListener('click', () => this.setStartTime());
+                this.projectNameElement.addEventListener('blur', () => this.saveSettings());
+                this.element.querySelector('.remove-button').addEventListener('click', () => this.removeClock());
+            }
+
+            loadSettings() {
+                const settings = JSON.parse(localStorage.getItem(`clock-${this.index}`)) || {};
+                this.startTime = new Date(settings.startTime || new Date().setHours(23, 59, 59, 0));
+                this.projectNameElement.textContent = settings.projectName || `项目 ${this.index + 1}`;
+            }
+
+            saveSettings() {
+                localStorage.setItem(`clock-${this.index}`, JSON.stringify({
+                    startTime: this.startTime.toISOString(),
+                    projectName: this.projectNameElement.textContent
+                }));
+            }
+
+            setStartTime() {
+                const newTime = prompt('请输入新的开播时间 (HH:MM:SS):', this.formatTime(this.startTime));
+                if (newTime) {
+                    const [hours, minutes, seconds] = newTime.split(':').map(Number);
+                    this.startTime = new Date();
+                    this.startTime.setHours(hours, minutes, seconds, 0);
+                    this.saveSettings();
+                }
+            }
+
+            updateClock() {
+                const now = new Date();
+                const timeDiff = this.startTime - now;
+
+                this.startTimeElement.textContent = this.formatTime(this.startTime);
+                this.localTimeElement.textContent = this.formatTime(now);
+
+                const countdownTitle = this.element.querySelector('#countdown .clock-title');
+
+                if (timeDiff > 0) {
+                    this.countdownElement.textContent = this.formatTimeDiff(timeDiff);
+                    if (timeDiff <= 10000) { // 10秒或更少
+                        this.countdownElement.style.color = 'red';
+                        this.countdownElement.style.animation = 'blink 1s infinite';
+                    } else if (timeDiff <= 600000) { // 10分钟或更少，但超过10秒
+                        this.countdownElement.style.color = 'orange';
+                        this.countdownElement.style.animation = 'none';
+                    } else {
+                        this.countdownElement.style.color = 'green';
+                        this.countdownElement.style.animation = 'none';
+                    }
+                    this.statusElement.textContent = timeDiff <= 600000 ? '◎Standby' : '';
+                    this.statusElement.className = timeDiff <= 600000 ? 'standby' : '';
+                    countdownTitle.textContent = '倒计时';
+                } else {
+                    this.countdownElement.textContent = this.formatTimeDiff(-timeDiff);
+                    this.countdownElement.style.color = 'red';
+                    this.countdownElement.style.animation = 'none';
+                    this.statusElement.textContent = '◉ONAIR';
+                    this.statusElement.className = 'on-air';
+                    countdownTitle.textContent = '直播中';
+                }
+            }
+
+            // updateClock() {
+            //     const now = new Date();
+            //     const timeDiff = this.startTime - now;
+
+            //     this.startTimeElement.textContent = this.formatTime(this.startTime);
+            //     this.localTimeElement.textContent = this.formatTime(now);
+
+            //     const countdownTitle = this.element.querySelector('#countdown .clock-title');
+
+            //     if (timeDiff > 0) {
+            //         this.countdownElement.textContent = this.formatTimeDiff(timeDiff);
+            //         if (timeDiff <= 600000) { // 10分钟或更少
+            //             this.countdownElement.style.color = 'orange';
+            //             this.countdownElement.style.animation = 'none'; // 移除闪烁效果
+            //         } else {
+            //             this.countdownElement.style.color = 'green';
+            //             this.countdownElement.style.animation = 'none';
+            //         }
+            //         this.statusElement.textContent = timeDiff <= 600000 ? '◎Standby' : '';
+            //         this.statusElement.className = timeDiff <= 600000 ? 'standby' : '';
+            //         countdownTitle.textContent = '倒计时';
+            //     } else {
+            //         this.countdownElement.textContent = this.formatTimeDiff(-timeDiff);
+            //         this.countdownElement.style.color = 'red';
+            //         this.countdownElement.style.animation = 'none';
+            //         this.statusElement.textContent = '◉ONAIR';
+            //         this.statusElement.className = 'on-air';
+            //         countdownTitle.textContent = '直播中';
+            //     }
+            // }
+
+            formatTime(date) {
+                return date.toTimeString().slice(0, 8);
+            }
+
+            formatTimeDiff(diff) {
+                const hours = Math.floor(diff / 3600000);
+                const minutes = Math.floor((diff % 3600000) / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            removeClock() {
+                this.container.removeChild(this.element);
+                localStorage.removeItem(`clock-${this.index}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM fully loaded");
+
+            const clocksContainer = document.getElementById('clocksContainer');
+            const addClockButton = document.getElementById('addClockButton');
+            const resetButton = document.getElementById('resetButton');
+            const loadingScreen = document.getElementById('loadingScreen');
+            const settingsButton = document.getElementById('settingsButton');
+            const settingsPanel = document.getElementById('settingsPanel');
+            const saveSettingsButton = document.getElementById('saveSettings');
+            const backgroundOverlay = document.getElementById('backgroundOverlay');
+            let clocks = [];
+            let tempSettings = {};
+
+            function addClock() {
+                const newClock = new StudioClock(clocksContainer, clocks.length);
+                clocks.push(newClock);
+            }
+
+            function loadClocks() {
+                return new Promise((resolve) => {
+                    console.log("Loading clocks");
+                    let index = 0;
+                    while (localStorage.getItem(`clock-${index}`)) {
+                        const newClock = new StudioClock(clocksContainer, index);
+                        clocks.push(newClock);
+                        index++;
+                    }
+                    if (index === 0) addClock();
+                    console.log("Clocks loaded");
+                    resolve();
+                });
+            }
+
+            function resetClocks() {
+                if (confirm('确定要重置所有时钟吗？这将删除所有保存的设置。')) {
+                    localStorage.clear();
+                    clocksContainer.innerHTML = '';
+                    clocks = [];
+                    addClock();
+                    loadSettings();
+                }
+            }
+
+            function updateAllClocks() {
+                clocks.forEach(clock => clock.updateClock());
+            }
+
+            function hideLoadingScreen() {
+                console.log("Hiding loading screen");
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                } else {
+                    console.error("Loading screen element not found");
+                }
+            }
+
+            function toggleSettingsPanel() {
+                if (settingsPanel.style.display === 'none') {
+                    settingsPanel.style.display = 'block';
+                    loadTempSettings();
+                } else {
+                    settingsPanel.style.display = 'none';
+                    discardTempSettings();
+                }
+            }
+
+            function loadTempSettings() {
+                const settings = JSON.parse(localStorage.getItem('clockSettings')) || {};
+                tempSettings = { ...settings };
+                document.getElementById('fontSize').value = settings.fontSize || 70;
+                document.getElementById('backgroundMode').value = settings.backgroundMode || 'cover';
+                document.getElementById('blurAmount').value = settings.blurAmount || 0;
+                document.getElementById('opacity').value = settings.opacity || 0;
+                updateBackgroundImageStatus(settings);
+            }
+
+
+            function handleBackgroundUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        tempSettings.backgroundImage = e.target.result;
+                        tempSettings.backgroundImageName = file.name;
+                        updateBackgroundImageStatus(tempSettings);
+                        previewSettings();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function discardTempSettings() {
+                tempSettings = {};
+                loadSettings();
+            }
+
+            function saveSettings() {
+                localStorage.setItem('clockSettings', JSON.stringify(tempSettings));
+                applySettings(tempSettings);
+                toggleSettingsPanel();
+            }
+
+            function applySettings(settings) {
+                document.querySelectorAll('.clock-time').forEach(el => {
+                    el.style.fontSize = `${settings.fontSize}px`;
+                });
+
+                if (settings.backgroundImage) {
+                    document.body.style.backgroundImage = `url('${settings.backgroundImage}')`;
+                } else {
+                    document.body.style.backgroundImage = 'none';
+                    document.body.style.backgroundColor = 'black';
+                }
+
+                document.body.style.backgroundSize = settings.backgroundMode === 'stretch' ? '100% 100%' : settings.backgroundMode;
+                document.body.style.backdropFilter = `blur(${settings.blurAmount}px)`;
+                backgroundOverlay.style.backgroundColor = `rgba(0, 0, 0, ${settings.opacity / 100})`;
+
+                adjustSettingsPanelStyle();
+                updateBackgroundImageStatus(settings);
+            }
+
+            function updateBackgroundImageStatus(settings) {
+                const currentBackgroundImage = document.getElementById('currentBackgroundImage');
+                if (settings.backgroundImageName) {
+                    currentBackgroundImage.textContent = `当前图片: ${settings.backgroundImageName}`;
+                } else {
+                    currentBackgroundImage.textContent = '未选择图片';
+                }
+            }
+
+            function adjustSettingsPanelStyle() {
+                const brightness = getBackgroundBrightness();
+                if (brightness > 128) {
+                    settingsPanel.classList.add('light-bg');
+                } else {
+                    settingsPanel.classList.remove('light-bg');
+                }
+            }
+
+            function getBackgroundBrightness() {
+                const bodyStyles = window.getComputedStyle(document.body);
+                const bgColor = bodyStyles.backgroundColor;
+                const bgImage = bodyStyles.backgroundImage;
+
+                if (bgImage !== 'none') {
+                    // 如果有背景图片，我们假设它较暗
+                    return 0;
+                }
+
+                const rgb = bgColor.match(/\d+/g);
+                if (rgb) {
+                    return (parseInt(rgb[0]) * 299 + parseInt(rgb[1]) * 587 + parseInt(rgb[2]) * 114) / 1000;
+                }
+
+                return 0; // 默认假设背景较暗
+            }
+
+            function loadSettings() {
+                const settings = JSON.parse(localStorage.getItem('clockSettings')) || {};
+                applySettings(settings);
+            }
+
+            function handleBackgroundUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        tempSettings.backgroundImage = e.target.result;
+                        previewSettings();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function previewSettings() {
+                const fontSize = document.getElementById('fontSize').value;
+                const backgroundMode = document.getElementById('backgroundMode').value;
+                const blurAmount = document.getElementById('blurAmount').value;
+                const opacity = document.getElementById('opacity').value;
+
+                tempSettings = {
+                    ...tempSettings,
+                    fontSize,
+                    backgroundMode,
+                    blurAmount,
+                    opacity
+                };
+
+                applySettings(tempSettings);
+            }
+
+
+            function initializeApp() {
+                console.log("Initializing app");
+                if (!clocksContainer) {
+                    console.error("Clocks container not found");
+                    return;
+                }
+
+                // 确保设置面板初始状态为隐藏
+                if (settingsPanel) settingsPanel.style.display = 'none';
+
+                loadClocks()
+                    .then(() => {
+                        console.log("Clocks loaded");
+                        updateAllClocks();
+                        setInterval(updateAllClocks, 1000);
+                        loadSettings();
+                        adjustSettingsPanelStyle();
+                        hideLoadingScreen();
+                    })
+                    .catch(error => {
+                        console.error("Error during initialization:", error);
+                        hideLoadingScreen(); // 即使出错也隐藏加载屏幕
+                    });
+            }
+
+            // 添加事件监听器
+            if (addClockButton) addClockButton.addEventListener('click', addClock);
+            if (resetButton) resetButton.addEventListener('click', resetClocks);
+            if (settingsButton) settingsButton.addEventListener('click', toggleSettingsPanel);
+            if (saveSettingsButton) saveSettingsButton.addEventListener('click', saveSettings);
+
+            const backgroundImageInput = document.getElementById('backgroundImage');
+            if (backgroundImageInput) {
+                backgroundImageInput.addEventListener('change', handleBackgroundUpload);
+            }
+
+            // 实时预览设置
+            ['fontSize', 'backgroundMode', 'blurAmount', 'opacity'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('input', previewSettings);
+                } else {
+                    console.warn(`Element with id '${id}' not found`);
+                }
+            });
+
+            // 点击设置面板外部关闭设置
+            document.addEventListener('click', function(event) {
+                if (settingsPanel && settingsButton && 
+                    !settingsPanel.contains(event.target) && 
+                    event.target !== settingsButton) {
+                    if (settingsPanel.style.display === 'block') {
+                        toggleSettingsPanel();
+                    }
+                }
+            });
+
+            // 启动应用
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
