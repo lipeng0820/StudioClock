@@ -29,6 +29,7 @@
             align-items: center;
             margin-bottom: 20px;
             position: relative;
+            width: 100%; /* 确保容器宽度占满 */
         }
 
         .project-name {
@@ -41,11 +42,22 @@
             display: flex;
             justify-content: space-between;
             width: 100%;
+            position: relative; /* 为分割线定位 */
         }
 
         .clock {
             text-align: center;
             margin: 0 20px;
+            flex: 1; /* 使每个时钟占据相等的空间 */
+        }
+
+        .clock-divider {
+            position: absolute;
+            left: 50%;
+            top: 10%;
+            bottom: 10%;
+            width: 2px;
+            background-color: rgba(255, 255, 255, 0.2); /* 暗色分割线 */
         }
 
         .clock-title {
@@ -190,9 +202,32 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        #footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+            font-size: 0.8em;
+        }
+
+        #footer a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+
+        #footer a:hover {
+            text-decoration: underline;
+        }
+
     </style>
 </head>
 <body>
+
     <div id="loadingScreen">
         <div class="loader"></div>
     </div>
@@ -200,6 +235,10 @@
     <div id="backgroundOverlay"></div>
 
     <button id="settingsButton">设置</button>
+
+    <div id="footer">
+        本程序由SimbaLee <a href="https://x.com/lipeng0820" target="_blank">@lipeng0820</a> 使用Claude3.5 Sonnet 编写，欢迎分享使用，感谢Andrew McCluskey提供LED字体，<a href="https://github.com/lipeng0820/StudioClock/raw/main/Font.zip" target="_blank">点击下载字体</a>
+    </div>
 
     <div id="settingsPanel">
         <h2>设置</h2>
@@ -327,37 +366,6 @@
                     countdownTitle.textContent = '直播中';
                 }
             }
-
-            // updateClock() {
-            //     const now = new Date();
-            //     const timeDiff = this.startTime - now;
-
-            //     this.startTimeElement.textContent = this.formatTime(this.startTime);
-            //     this.localTimeElement.textContent = this.formatTime(now);
-
-            //     const countdownTitle = this.element.querySelector('#countdown .clock-title');
-
-            //     if (timeDiff > 0) {
-            //         this.countdownElement.textContent = this.formatTimeDiff(timeDiff);
-            //         if (timeDiff <= 600000) { // 10分钟或更少
-            //             this.countdownElement.style.color = 'orange';
-            //             this.countdownElement.style.animation = 'none'; // 移除闪烁效果
-            //         } else {
-            //             this.countdownElement.style.color = 'green';
-            //             this.countdownElement.style.animation = 'none';
-            //         }
-            //         this.statusElement.textContent = timeDiff <= 600000 ? '◎Standby' : '';
-            //         this.statusElement.className = timeDiff <= 600000 ? 'standby' : '';
-            //         countdownTitle.textContent = '倒计时';
-            //     } else {
-            //         this.countdownElement.textContent = this.formatTimeDiff(-timeDiff);
-            //         this.countdownElement.style.color = 'red';
-            //         this.countdownElement.style.animation = 'none';
-            //         this.statusElement.textContent = '◉ONAIR';
-            //         this.statusElement.className = 'on-air';
-            //         countdownTitle.textContent = '直播中';
-            //     }
-            // }
 
             formatTime(date) {
                 return date.toTimeString().slice(0, 8);
