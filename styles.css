@@ -328,6 +328,15 @@ button:active {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
 }
 
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    margin-top: 20px;
+}
+
 #addClockButton {
     width: 50px;
     height: 50px;
@@ -899,4 +908,435 @@ body.no-glow button {
 .tz-ref-remove:hover {
     background: rgba(255, 59, 59, 0.2);
     color: var(--color-red);
+}
+
+/* ===== 移动端响应式样式 ===== */
+
+/* 平板设备 (max-width: 768px) */
+@media screen and (max-width: 768px) {
+
+    /* 禁止水平滚动 */
+    html,
+    body {
+        overflow-x: hidden;
+        width: 100%;
+        max-width: 100vw;
+    }
+
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    #app-content {
+        padding: 0;
+        margin: 0;
+        height: 100vh;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+    }
+
+    #clocksContainer {
+        flex: 1;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .clock-container {
+        padding: 0;
+        border-radius: 0;
+        border: none;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .project-header {
+        justify-content: center;
+        margin-bottom: 5px;
+    }
+
+    .clocks {
+        flex-direction: column;
+        gap: 3vh;
+        /* 减少间距腾出空间给超大字体 */
+        flex: 1;
+        justify-content: center;
+        width: 100%;
+        align-items: center;
+    }
+
+    .clock {
+        margin: 0;
+        width: 100%;
+        padding: 5px 0;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 0 0 auto;
+    }
+
+    /* 移动端隐藏分隔线 */
+    .clock-divider {
+        display: none;
+    }
+
+    /* 终极超大字体：如图所示 */
+    .clock-time {
+        font-size: 24vw !important;
+        /* 终极填充 */
+        text-align: center;
+        width: 100%;
+        display: block;
+        letter-spacing: -0.04em;
+        /* 微收字距以防换行 */
+        line-height: 0.9;
+        /* 紧凑行高 */
+        white-space: nowrap;
+        padding: 0;
+        margin: 0;
+    }
+
+    .project-name {
+        font-size: 1.2em;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    .clock-title {
+        text-align: center;
+        margin-bottom: 0;
+        font-size: 0.9em;
+    }
+
+    .status {
+        text-align: center;
+    }
+
+    #settingsButton {
+        top: 10px;
+        right: 10px;
+        padding: 8px 16px;
+        font-size: 12px;
+        z-index: 1001;
+    }
+
+    #settingsPanel {
+        position: fixed;
+        width: 100%;
+        max-width: 100%;
+        left: 0;
+        right: 0;
+        top: 50px;
+        bottom: 0;
+        max-height: none;
+        height: calc(100vh - 50px);
+        overflow-y: auto;
+        border-radius: 0;
+        padding: 20px;
+        box-sizing: border-box;
+        z-index: 1000;
+        transform: none !important;
+        /* 重置 PC 端的居中偏移 */
+    }
+
+    #settingsPanel h2 {
+        font-size: 1.2em;
+        margin-bottom: 20px;
+    }
+
+    #settingsPanel label {
+        font-size: 0.85em;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    #settingsPanel input[type="range"] {
+        width: 100%;
+    }
+
+    .toggle-setting {
+        padding: 10px 0;
+    }
+
+    .toggle-setting>label:first-child {
+        flex: 1;
+    }
+
+    #saveSettings {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+        margin-top: 20px;
+    }
+
+    /* 时区选择器移动端优化 */
+    .timezone-picker {
+        width: 95%;
+        max-height: 80vh;
+    }
+
+    .tz-options {
+        grid-template-columns: 1fr;
+    }
+
+    .tz-option {
+        padding: 12px 15px;
+        font-size: 0.9em;
+    }
+
+    /* 时区参考显示优化 */
+    .tz-ref-item {
+        padding: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .tz-ref-time {
+        font-size: 1em;
+    }
+
+    /* 按钮容器 - 并排显示 */
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        width: 100%;
+        padding: 0 20px;
+        margin-top: auto;
+        padding-bottom: 40px;
+        /* 底部安全距离 */
+        box-sizing: border-box;
+    }
+
+    #addClockButton,
+    #resetButton {
+        display: inline-flex;
+        width: auto !important;
+        min-width: 100px;
+        max-width: none;
+        margin: 0;
+        padding: 0 24px;
+        font-size: 14px;
+        border-radius: 22px;
+        /* 胶囊形状 */
+        height: 44px;
+        line-height: normal;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    #addClockButton {
+        margin-bottom: 0;
+    }
+
+    #resetButton {
+        margin-bottom: 0;
+    }
+
+    /* 移动端隐藏页脚 */
+    #footer {
+        display: none;
+    }
+}
+
+/* 手机设备 (max-width: 480px) */
+@media screen and (max-width: 480px) {
+    body {
+        padding: 5px;
+    }
+
+    #clocksContainer {
+        max-width: 100%;
+        padding: 5px;
+    }
+
+    .clock-container {
+        padding: 15px 10px;
+        border-radius: 12px;
+    }
+
+    .project-name {
+        font-size: 1.2em;
+        padding: 6px 12px;
+        letter-spacing: 0.05em;
+    }
+
+    .project-header,
+    .clock-header {
+        gap: 5px;
+    }
+
+    .edit-icon {
+        width: 12px;
+        height: 12px;
+    }
+
+    .clock-title {
+        font-size: 0.8em;
+        letter-spacing: 0.1em;
+    }
+
+    /* .clock-time {
+        font-size: 36px !important;
+    } */
+
+    .status {
+        font-size: 0.8em;
+    }
+
+    /* 时区参考紧凑显示 */
+    .tz-ref-item {
+        padding: 8px;
+        font-size: 0.85em;
+    }
+
+    .tz-ref-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    .tz-ref-name {
+        font-size: 0.9em;
+    }
+
+    .tz-ref-offset {
+        font-size: 0.75em;
+    }
+
+    .tz-ref-time {
+        font-size: 0.95em;
+    }
+
+    /* 设置面板全屏 */
+    #settingsPanel {
+        width: 100%;
+        max-width: 100%;
+        right: 0;
+        top: 50px;
+        border-radius: 0;
+        max-height: calc(100vh - 50px);
+    }
+
+    #settingsPanel h2 {
+        font-size: 1.2em;
+    }
+
+    #settingsPanel label {
+        font-size: 0.8em;
+    }
+
+    /* 时区选择器全屏 */
+    .timezone-picker {
+        width: 100%;
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .tz-header h3 {
+        font-size: 1em;
+    }
+
+    .tz-region-title {
+        font-size: 0.85em;
+    }
+
+    .tz-option {
+        padding: 14px 12px;
+    }
+
+    /* 按钮触摸友好 */
+    #addClockButton,
+    #resetButton {
+        padding: 12px 24px;
+        min-height: 44px;
+    }
+
+    .remove-button {
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    /* 开关控件触摸友好 */
+    .toggle-switch {
+        width: 56px;
+        height: 30px;
+    }
+
+    .toggle-slider:before {
+        height: 24px;
+        width: 24px;
+    }
+
+    .toggle-switch input:checked+.toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    /* 背景控制按钮 */
+    .background-controls {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .custom-file-btn,
+    #removeBackgroundImage {
+        width: 100%;
+        height: 44px;
+    }
+
+    #footer {
+        font-size: 9px;
+        padding: 8px 5px;
+        line-height: 1.4;
+    }
+}
+
+/* 横屏模式优化 */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    .clocks {
+        flex-direction: row;
+        flex-wrap: nowrap;
+    }
+
+    .clock {
+        margin: 0 10px;
+    }
+
+    .clock-divider {
+        width: 1px;
+        height: 60px;
+        background: linear-gradient(to bottom,
+                transparent 0%,
+                var(--color-border) 20%,
+                var(--color-border) 80%,
+                transparent 100%);
+    }
+
+    .clock-time {
+        font-size: 32px !important;
+    }
+
+    .timezone-references {
+        display: none;
+        /* 横屏时隐藏时区参考以节省空间 */
+    }
 }
