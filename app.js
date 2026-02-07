@@ -130,9 +130,10 @@ class StudioClock {
                 </div>
                 <div class="clock-divider"></div>
                 <div class="clock" id="localTime">
-                    <div class="clock-title">当地时间</div>
+                    <div class="clock-title local-time-title" title="点击添加时区参考">当地时间 <span class="add-tz-hint">+</span></div>
                     <div class="clock-time"></div>
                     <div class="status"></div>
+                    <div class="timezone-references"></div>
                 </div>
                 <div class="clock-divider"></div>
                 <div class="clock" id="countdown">
@@ -186,6 +187,16 @@ class StudioClock {
 
         if (this.startTimeTitle) {
             this.startTimeTitle.addEventListener('click', () => this.setStartTime());
+        }
+
+        // 时区选择器 - 点击当地时间标题打开
+        this.localTimeTitle = this.element.querySelector('.local-time-title');
+        this.timezoneRefsContainer = this.element.querySelector('.timezone-references');
+
+        if (this.localTimeTitle) {
+            this.localTimeTitle.addEventListener('click', () => {
+                openTimezoneModal(this.index);
+            });
         }
     }
 
@@ -720,6 +731,178 @@ function previewSettings() {
     applySettings(tempSettings);
 }
 
+// ===== 时区管理模块 =====
+
+let selectedTimezones = [];
+let currentClockForTz = null;
+const timezoneModal = document.getElementById('timezoneModal');
+
+function openTimezoneModal(clockIndex) {
+    currentClockForTz = clockIndex;
+    if (timezoneModal) {
+        timezoneModal.style.display = 'flex';
+        updateTimezoneModalState();
+    }
+}
+
+function closeTimezoneModal() {
+    if (timezoneModal) {
+        timezoneModal.style.display = 'none';
+    }
+    currentClockForTz = null;
+}
+
+function updateTimezoneModalState() {
+    // 更新已选中的时区状态
+    const options = document.querySelectorAll('.tz-option');
+    const selected = getSelectedTimezonesForClock(currentClockForTz);
+
+    options.forEach(opt => {
+        const tz = opt.dataset.tz;
+        if (selected.some(s => s.tz === tz)) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+}
+
+function getSelectedTimezonesForClock(clockIndex) {
+    const saved = safeJSONParse(localStorage.getItem(`clock-${clockIndex}-timezones`), []);
+    return Array.isArray(saved) ? saved : [];
+}
+
+function saveTimezonesForClock(clockIndex, timezones) {
+    localStorage.setItem(`clock-${clockIndex}-timezones`, JSON.stringify(timezones));
+}
+
+function addTimezoneReference(tz, offset, name) {
+    if (currentClockForTz === null) return;
+
+    const selected = getSelectedTimezonesForClock(currentClockForTz);
+
+    // 检查是否已存在
+    if (selected.some(s => s.tz === tz)) {
+        // 已存在则移除
+        const newSelected = selected.filter(s => s.tz !== tz);
+        saveTimezonesForClock(currentClockForTz, newSelected);
+    } else {
+        // 不存在则添加
+        selected.push({ tz, offset, name });
+        saveTimezonesForClock(currentClockForTz, selected);
+    }
+
+    updateTimezoneModalState();
+    updateAllTimezoneReferences();
+}
+
+function removeTimezoneReference(clockIndex, tz) {
+    const selected = getSelectedTimezonesForClock(clockIndex);
+    const newSelected = selected.filter(s => s.tz !== tz);
+    saveTimezonesForClock(clockIndex, newSelected);
+    updateAllTimezoneReferences();
+}
+
+function getTimeInTimezone(tzId) {
+    try {
+        const now = new Date();
+        const options = {
+            timeZone: tzId,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        return now.toLocaleTimeString('zh-CN', options);
+    } catch (e) {
+        console.warn('无法获取时区时间:', tzId, e);
+        return '--:--:--';
+    }
+}
+
+function renderTimezoneReferences(clockElement, clockIndex) {
+    const container = clockElement.querySelector('.timezone-references');
+    if (!container) return;
+
+    const selected = getSelectedTimezonesForClock(clockIndex);
+
+    if (selected.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    selected.forEach(tz => {
+        const time = getTimeInTimezone(tz.tz);
+        // offset 已经包含符号（如 "+8" 或 "-5"），直接拼接
+        const offsetStr = `GMT${tz.offset}`;
+        html += `
+            <div class="tz-ref-item" data-tz="${tz.tz}">
+                <div class="tz-ref-info">
+                    <span class="tz-ref-name">🌍 ${tz.name}</span>
+                    <span class="tz-ref-offset">(${offsetStr})</span>
+                </div>
+                <div class="tz-ref-time">${time}</div>
+                <button class="tz-ref-remove" data-tz="${tz.tz}" title="移除此时区">×</button>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+
+    // 绑定移除按钮事件
+    container.querySelectorAll('.tz-ref-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeTimezoneReference(clockIndex, btn.dataset.tz);
+        });
+    });
+}
+
+function updateAllTimezoneReferences() {
+    document.querySelectorAll('.clock-container').forEach(clockEl => {
+        const clockIndex = parseInt(clockEl.dataset.clockIndex);
+        if (!isNaN(clockIndex)) {
+            renderTimezoneReferences(clockEl, clockIndex);
+        }
+    });
+}
+
+// 启动时区时间更新定时器
+function startTimezoneUpdateTimer() {
+    setInterval(() => {
+        updateAllTimezoneReferences();
+    }, 1000);
+}
+
+// 初始化时区选择器事件
+function initTimezoneModal() {
+    if (!timezoneModal) return;
+
+    // 关闭按钮
+    const closeBtn = timezoneModal.querySelector('.tz-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeTimezoneModal);
+    }
+
+    // 点击遮罩关闭
+    timezoneModal.addEventListener('click', (e) => {
+        if (e.target === timezoneModal) {
+            closeTimezoneModal();
+        }
+    });
+
+    // 时区选项点击
+    timezoneModal.querySelectorAll('.tz-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            const tz = opt.dataset.tz;
+            const offset = opt.dataset.offset;
+            const name = opt.dataset.name;
+            addTimezoneReference(tz, offset, name);
+        });
+    });
+}
+
 // ===== 初始化 =====
 
 function initializeApp() {
@@ -743,6 +926,12 @@ function initializeApp() {
             updateInterval = setInterval(updateAllClocks, 1000);
             loadSettings();
             adjustSettingsPanelStyle();
+
+            // 初始化时区功能
+            initTimezoneModal();
+            updateAllTimezoneReferences();
+            startTimezoneUpdateTimer();
+
             hideLoadingScreen();
         })
         .catch(error => {

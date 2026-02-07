@@ -19,6 +19,65 @@
 
     <button id="settingsButton">设置</button>
 
+    <!-- 时区选择器模态框 -->
+    <div id="timezoneModal" class="modal-overlay" style="display: none;">
+        <div class="timezone-picker">
+            <div class="tz-header">
+                <h3>选择时区参考</h3>
+                <button class="tz-close-btn">&times;</button>
+            </div>
+            <div class="tz-content">
+                <div class="tz-region" data-region="亚洲">
+                    <div class="tz-region-title">🌏 亚洲</div>
+                    <div class="tz-options">
+                        <div class="tz-option" data-tz="Asia/Shanghai" data-offset="+8" data-name="北京">北京 (GMT+8)</div>
+                        <div class="tz-option" data-tz="Asia/Tokyo" data-offset="+9" data-name="东京">东京 (GMT+9)</div>
+                        <div class="tz-option" data-tz="Asia/Seoul" data-offset="+9" data-name="首尔">首尔 (GMT+9)</div>
+                        <div class="tz-option" data-tz="Asia/Singapore" data-offset="+8" data-name="新加坡">新加坡 (GMT+8)
+                        </div>
+                        <div class="tz-option" data-tz="Asia/Dubai" data-offset="+4" data-name="迪拜">迪拜 (GMT+4)</div>
+                        <div class="tz-option" data-tz="Asia/Kolkata" data-offset="+5.5" data-name="孟买">孟买 (GMT+5:30)
+                        </div>
+                    </div>
+                </div>
+                <div class="tz-region" data-region="欧洲">
+                    <div class="tz-region-title">🌍 欧洲</div>
+                    <div class="tz-options">
+                        <div class="tz-option" data-tz="Europe/London" data-offset="+0" data-name="伦敦">伦敦 (GMT+0)</div>
+                        <div class="tz-option" data-tz="Europe/Paris" data-offset="+1" data-name="巴黎">巴黎 (GMT+1)</div>
+                        <div class="tz-option" data-tz="Europe/Berlin" data-offset="+1" data-name="柏林">柏林 (GMT+1)</div>
+                        <div class="tz-option" data-tz="Europe/Moscow" data-offset="+3" data-name="莫斯科">莫斯科 (GMT+3)
+                        </div>
+                    </div>
+                </div>
+                <div class="tz-region" data-region="美洲">
+                    <div class="tz-region-title">🌎 美洲</div>
+                    <div class="tz-options">
+                        <div class="tz-option" data-tz="America/New_York" data-offset="-5" data-name="纽约">纽约 (GMT-5)
+                        </div>
+                        <div class="tz-option" data-tz="America/Los_Angeles" data-offset="-8" data-name="洛杉矶">洛杉矶
+                            (GMT-8)</div>
+                        <div class="tz-option" data-tz="America/Chicago" data-offset="-6" data-name="芝加哥">芝加哥 (GMT-6)
+                        </div>
+                        <div class="tz-option" data-tz="America/Toronto" data-offset="-5" data-name="多伦多">多伦多 (GMT-5)
+                        </div>
+                        <div class="tz-option" data-tz="America/Sao_Paulo" data-offset="-3" data-name="圣保罗">圣保罗 (GMT-3)
+                        </div>
+                    </div>
+                </div>
+                <div class="tz-region" data-region="大洋洲">
+                    <div class="tz-region-title">🌏 大洋洲</div>
+                    <div class="tz-options">
+                        <div class="tz-option" data-tz="Australia/Sydney" data-offset="+11" data-name="悉尼">悉尼 (GMT+11)
+                        </div>
+                        <div class="tz-option" data-tz="Pacific/Auckland" data-offset="+13" data-name="奥克兰">奥克兰 (GMT+13)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="settingsPanel">
         <h2>设置</h2>
         <label for="fontSize">时钟字体大小：</label>

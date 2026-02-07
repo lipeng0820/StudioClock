@@ -720,3 +720,183 @@ body.no-glow #settingsButton,
 body.no-glow button {
     box-shadow: none !important;
 }
+
+/* ===== 时区选择器模态框 ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.timezone-picker {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 500px;
+    width: 90%;
+    max-height: 70vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+.tz-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tz-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: white;
+}
+
+.tz-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.tz-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.tz-content {
+    padding: 15px;
+    max-height: calc(70vh - 80px);
+    overflow-y: auto;
+}
+
+.tz-region {
+    margin-bottom: 15px;
+}
+
+.tz-region-title {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tz-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.tz-option {
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+}
+
+.tz-option:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.tz-option.selected {
+    background: var(--color-green);
+    color: white;
+}
+
+/* ===== 时区参考显示 ===== */
+.local-time-title {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.local-time-title:hover {
+    color: var(--color-green);
+}
+
+.add-tz-hint {
+    font-size: 0.8em;
+    opacity: 0.5;
+    margin-left: 5px;
+}
+
+.local-time-title:hover .add-tz-hint {
+    opacity: 1;
+    color: var(--color-green);
+}
+
+.timezone-references {
+    margin-top: 10px;
+}
+
+.tz-ref-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    border-left: 3px solid var(--color-orange);
+}
+
+.tz-ref-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tz-ref-name {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.tz-ref-offset {
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.85em;
+}
+
+.tz-ref-time {
+    font-family: 'Digital Dismay', monospace;
+    font-size: 1.2em;
+    color: var(--color-orange);
+}
+
+.tz-ref-remove {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    padding: 4px;
+    font-size: 16px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.tz-ref-remove:hover {
+    background: rgba(255, 59, 59, 0.2);
+    color: var(--color-red);
+}
